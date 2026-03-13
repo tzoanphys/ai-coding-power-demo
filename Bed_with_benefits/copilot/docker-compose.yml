@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27018:27017"  # changed host port to avoid conflicts with local MongoDB
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    ports:
+      - "5001:5000"  # use 5001 on host to avoid conflicts with locally running backend
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/bedwithbenefits
+    depends_on:
+      - mongodb
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3001:80"  # use 3001 on host to avoid conflict with local React dev server
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
