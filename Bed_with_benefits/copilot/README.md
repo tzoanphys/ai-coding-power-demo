@@ -1,5 +1,7 @@
 # BedWithBenefits
 
+The agency that it is used is Claude -- agency provided by Copilot 
+
 An Airbnb-like app for property rentals.
 
 ## Quick Start with Docker
