@@ -8,11 +8,30 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: bedwithbenefits
-    ports:
-      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/bedwithbenefits?schema=public
+      JWT_SECRET: super-secret-change-me
+      PORT: 4000
+    depends_on:
+      - db
+    ports:
+      - '4000:4000'
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://backend:4000
+    depends_on:
+      - backend
+    ports:
+      - '5173:5173'
+
 volumes:
   postgres_data: {}
-
