@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  email        String    @unique
+  passwordHash String
+  fullName     String
+  avatarUrl    String?
+
+  listings Listing[]
+  bookings Booking[] @relation("UserBookings")
+  reviews  Review[]
+}
+
+model Listing {
+  id          String      @id @default(uuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  title       String
+  description String
+  nightlyRate Int
+  cleaningFee Int         @default(0)
+  serviceFee  Int         @default(0)
+  maxGuests   Int
+  bedrooms    Int
+  bathrooms   Int
+  addressLine1 String
+  addressLine2 String?
+  city        String
+  state       String
+  country     String
+  latitude    Float?
+  longitude   Float?
+
+  host       User      @relation(fields: [hostId], references: [id])
+  hostId     String
+
+  photos     ListingPhoto[]
+  amenities  ListingAmenity[]
+  bookings   Booking[]
+  reviews    Review[]
+}
+
+model ListingPhoto {
+  id        String  @id @default(uuid())
+  url       String
+  isCover   Boolean @default(false)
+  listing   Listing @relation(fields: [listingId], references: [id])
+  listingId String
+}
+
+model Amenity {
+  id       String           @id @default(uuid())
+  name     String           @unique
+  icon     String?
+  listings ListingAmenity[]
+}
+
+model ListingAmenity {
+  listing   Listing @relation(fields: [listingId], references: [id])
+  listingId String
+  amenity   Amenity @relation(fields: [amenityId], references: [id])
+  amenityId String
+
+  @@id([listingId, amenityId])
+}
+
+model Booking {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  checkIn     DateTime
+  checkOut    DateTime
+  totalPrice  Int
+  status      BookingStatus @default(PENDING)
+
+  guest       User    @relation("UserBookings", fields: [guestId], references: [id])
+  guestId     String
+
+  listing     Listing @relation(fields: [listingId], references: [id])
+  listingId   String
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  rating      Int
+  comment     String
+
+  author      User    @relation(fields: [authorId], references: [id])
+  authorId    String
+
+  listing     Listing @relation(fields: [listingId], references: [id])
+  listingId   String
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
